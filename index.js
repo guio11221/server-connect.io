@@ -1,65 +1,60 @@
-const { format } = require('util');
+const assert = require('assert');
 
 /**
- * Expose `flash()` function on requests.
+ * Middleware para gerenciar mensagens de flash.
  *
- * @param {Object} [options]
  * @return {Function}
- * @api public
  */
-module.exports = function flash(options = {}) {
-  const safe = options.unsafe === undefined ? true : !options.unsafe;
-  const logger = options.logger || console;
+module.exports = function () {
+  return function (req, res, next) {
+    assert(req.session, 'É necessário que req.session esteja disponível!');
 
-  return function(req, res, next) {
-    if (req.flash && safe) {
-      return next();
+    // Inicializa a sessão de flash se não existir
+    if (!Array.isArray(req.session.flash)) {
+      req.session.flash = [];
     }
-    req.flash = _flash.bind(req);
+
+    // Define res.locals.flash como a sessão de flash
+    res.locals.flash = req.session.flash;
+
+    // Adiciona o método flash aos objetos req e res
+    req.flash = res.flash = addFlashMessage;
+
     next();
   };
+};
 
-  function _flash(type, ...msgs) {
-    if (!this.session) {
-      throw new Error('req.flash() requires sessions');
-    }
-
-    const flash = this.session.flash = this.session.flash || {};
-
-    if (type && msgs.length > 0) {
-      if (msgs.length > 1 && format) {
-        msgs = format(...msgs);
-      } else if (Array.isArray(msgs[0])) {
-        msgs[0].forEach(msg => {
-          (flash[type] = flash[type] || []).push(msg);
-        });
-        return flash[type].length;
-      } else {
-        (flash[type] = flash[type] || []).push(msgs[0]);
-      }
-      return flash[type].length;
-    } else if (type) {
-      const messages = flash[type] || [];
-      delete flash[type];
-      return messages;
-    } else {
-      this.session.flash = {};
-      return flash;
-    }
+/**
+ * Adiciona uma mensagem de flash.
+ *
+ * @param {string} [type='info'] - O tipo da mensagem (por exemplo, 'info', 'error').
+ * @param {string} msg - A mensagem de flash.
+ * @return {Object} O objeto de requisição/resposta.
+ */
+function addFlashMessage(type, msg) {
+  // Se apenas um argumento for passado, considera-o como a mensagem e define o tipo como 'info'
+  if (!msg) {
+    msg = type;
+    type = 'info';
   }
-};
 
-/**
- * Middleware to clear flash messages after they are read.
- *
- * @return {Function}
- * @api public
- */
-module.exports.clearFlash = function clearFlash() {
-  return function(req, res, next) {
-    if (req.session && req.session.flash) {
-      req.session.flash = {};
-    }
-    next();
+  // Cria o objeto de mensagem
+  const message = {
+    message: msg,
+    type: type
   };
-};
+
+  // Obtém a lista de mensagens de flash
+  const messages = this.res ? this.res.locals.flash : this.locals.flash;
+
+  // Verifica se a mensagem já existe para evitar duplicatas
+  const isDuplicate = messages.some(existingMsg =>
+    existingMsg.type === message.type && existingMsg.message === message.message
+  );
+
+  if (!isDuplicate) {
+    messages.push(message);
+  }
+
+  return this;
+}

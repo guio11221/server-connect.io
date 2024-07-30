@@ -3,9 +3,28 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "mocha"
   },
   "author": "Guii Santos <sguii5147@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guio11221/server-connect.io.git"
+  },
+  "bugs": {
+    "url": "https://github.com/guio11221/server-connect.io/issues"
+  },
+  "homepage": "https://github.com/guio11221/server-connect.io#readme",
   "license": "ISC",
-  "description": ""
+  "description": "A middleware for managing flash messages in Express.js applications, providing a simple interface for setting and retrieving messages that persist across requests.",
+  "dependencies": {
+    "cookie-session": "^2.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2"
+  },
+  "devDependencies": {
+    "assert": "^2.1.0",
+    "mocha": "^10.7.0",
+    "supertest": "^6.3.4"
+  }
 }
