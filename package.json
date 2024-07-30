@@ -1,0 +1,11 @@
+{
+  "name": "server-connect.io",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Guii Santos <sguii5147@gmail.com>",
+  "license": "ISC",
+  "description": ""
+}
